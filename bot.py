@@ -33,13 +33,70 @@ def send_telegram(text):
 def check_rss_feeds(seen):
     new_found = False
     queries = [
-        '"Praktische Tätigkeit 1" Berlin',
-        '"Praktische Tätigkeit 1" Brandenburg',
-        '"PT1" Psychotherapie Berlin',
-        '"PT1" Psychotherapie Brandenburg',
-        '"PiA" Psychiatrie Berlin',
-        '"PiA" Psychiatrie Brandenburg',
-        '"Psychologe in Ausbildung" Berlin'
+        # PT1 & PiA allgemein
+        '"Praktische Tätigkeit 1" Berlin OR Brandenburg',
+        '"Praktische Tätigkeit 1" Wittenberg OR Dessau OR Magdeburg OR Neubrandenburg',
+        '"PT1" Psychotherapie Berlin OR Brandenburg',
+        '"PiA" Psychiatrie OR Psychosomatik Berlin OR Brandenburg',
+        # Alexianer, Havelhöhe & Privatkliniken
+        '"Alexianer" Berlin Psychologe OR Psychologin OR PiA OR PT1',
+        '"St. Joseph-Krankenhaus" Weißensee Psychologe OR Psychologin OR PiA OR PT1',
+        '"Krankenhaus Hedwigshöhe" Psychologe OR Psychologin OR PiA OR PT1',
+        '"St. Hedwig-Krankenhaus" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Havelhöhe" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Limes Schlossklinik" Fürstenwalde Psychologe OR Psychologin OR PiA',
+        '"Heiligenfeld" Berlin Psychologe OR Psychologin OR PiA',
+        '"Privatklinik" Psychiatrie OR Psychosomatik Psychologe OR Psychologin Berlin OR Brandenburg',
+        # Forensik, Maßregelvollzug & Justizvollzug
+        '"Plötzensee" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Justizvollzugskrankenhaus" Berlin Psychologe OR Psychologin OR PiA OR PT1',
+        '"Justizvollzugsanstalt" OR "JVA" Berlin OR Brandenburg Psychologe OR Psychologin OR PiA OR PT1',
+        '"Maßregelvollzug" Berlin OR Brandenburg Psychologe OR Psychologin OR PiA OR PT1',
+        '"Forensische Psychiatrie" Berlin OR Brandenburg OR Uchtspringe Psychologe OR Psychologin OR PiA OR PT1',
+        # Psychosomatik-Rehas & Stationäre Suchttherapie
+        '"Psychosomatik" Reha Psychologe OR Psychologin Berlin OR Brandenburg',
+        '"Rehaklinik Hoher Fläming" Bad Belzig Psychologe OR Psychologin OR PiA',
+        '"Heinrich-Heine-Klinik" Potsdam Psychologe OR Psychologin OR PiA',
+        '"Klinik am See" Rüdersdorf Psychologe OR Psychologin OR PiA',
+        '"Fachklinik Wolletzsee" Angermünde Psychologe OR Psychologin OR PiA',
+        '"Reha-Zentrum Seehof" Teltow Psychologe OR Psychologin OR PiA',
+        '"Suchttherapie" OR "Suchtrehabilitation" Psychologe OR Psychologin Berlin OR Brandenburg',
+        '"MEDIAN Klinik" Berlin OR Grünheide OR Hoppegarten Psychologe OR Psychologin OR PiA',
+        '"Salus Klinik Lindow" Psychologe OR Psychologin OR PiA',
+        '"Fontane-Klinik" Motzen Psychologe OR Psychologin OR PiA',
+        '"Tannenhof Berlin-Brandenburg" Psychologe OR Psychologin OR PiA',
+        # Reguläre Psychologen-Stellen allgemein
+        '"Psychologe" OR "Psychologin" Klinik Berlin Stellenangebot',
+        '"Psychologe" OR "Psychologin" Klinik Brandenburg Stellenangebot',
+        '"M.Sc. Psychologie" Berlin OR Brandenburg Stellenangebot',
+        # Weitere Berliner & Brandenburger Kliniken
+        '"Vivantes" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Charité" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Theodor-Wenzel-Werk" Psychologe OR Psychologin OR PiA OR PT1',
+        '"LAGO" Wannsee OR "Drogentherapie-Zentrum" Psychologe OR Psychologin OR PiA',
+        '"Jüdisches Krankenhaus" Berlin Psychologe OR Psychologin OR PiA OR PT1',
+        '"Königin Elisabeth Herzberge" OR "KEH" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Park-Klinik Sophie Charlotte" Psychologe OR Psychologin OR PiA OR PT1',
+        '"DRK Kliniken Berlin" Psychologe OR Psychologin OR PiA OR PT1',
+        '"St. Joseph Krankenhaus" Tempelhof Psychologe OR Psychologin OR PiA OR PT1',
+        '"Helios" Berlin-Buch OR "Emil von Behring" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Schlosspark-Klinik" Berlin Psychologe OR Psychologin OR PiA OR PT1',
+        '"Ernst von Bergmann" Potsdam Psychologe OR Psychologin OR PiA OR PT1',
+        '"Oberberg" Berlin OR Brandenburg OR Potsdam OR "Wendisch Rietz" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Martin Gropius Krankenhaus" OR "GLG" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Immanuel Klinik Rüdersdorf" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Asklepios" Brandenburg OR Teupitz OR Lübben OR Pasewalk Psychologe OR Psychologin OR PiA OR PT1',
+        '"Ruppiner Kliniken" OR "Universitätsklinikum Ruppin" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Havelland Kliniken" Nauen Psychologe OR Psychologin OR PiA OR PT1',
+        '"Oberhavel Kliniken" Hennigsdorf Psychologe OR Psychologin OR PiA OR PT1',
+        '"Johanniter" Treuenbrietzen Psychologe OR Psychologin OR PiA OR PT1',
+        '"Carl Thiem" OR "MUL-CT" Cottbus Psychologe OR Psychologin OR PiA OR PT1',
+        '"Klinikum Frankfurt (Oder)" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Klinik Bosse Wittenberg" OR "St. Joseph-Krankenhaus Dessau" Psychologe OR Psychologin OR PiA OR PT1',
+        '"Salus" Uchtspringe OR Bernburg Psychologe OR Psychologin OR PiA OR PT1',
+        '"Dietrich-Bonhoeffer-Klinikum" Neubrandenburg OR Neustrelitz Psychologe OR Psychologin OR PiA OR PT1',
+        '"Elblandkliniken" Riesa Psychologe OR Psychologin OR PiA OR PT1',
+        '"Seenland Klinikum" Hoyerswerda Psychologe OR Psychologin OR PiA OR PT1'
     ]
     
     for q in queries:
@@ -61,7 +118,7 @@ def check_rss_feeds(seen):
                     if guid and guid not in seen:
                         seen.add(guid)
                         new_found = True
-                        msg = f"🆕 <b>Neuer PT1/PiA-Treffer!</b>\n\n<b>{title}</b>\n🔗 <a href='{link}'>Zur Ausschreibung</a>"
+                        msg = f"🆕 <b>Neuer Stellen-Treffer!</b>\n\n<b>{title}</b>\n🔗 <a href='{link}'>Zur Ausschreibung</a>"
                         send_telegram(msg)
             except Exception as e:
                 print("Feed Fehler:", e)
@@ -71,48 +128,25 @@ def check_rss_feeds(seen):
 def check_clinics(seen):
     new_found = False
     clinic_pages = [
-        ("Vivantes Karriere", "https:" + SLASH + SLASH + "karriere.vivantes.de" + SLASH + "stellenangebote"),
-        ("Charité Karriere", "https:" + SLASH + SLASH + "karriere.charite.de" + SLASH + "stellenangebote"),
-        ("Alexianer Karriere", "https:" + SLASH + SLASH + "www.alexianer.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
-        ("Oberberg Kliniken", "https:" + SLASH + SLASH + "www.oberbergkliniken.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
-        ("Theodor-Wenzel-Werk", "https:" + SLASH + SLASH + "www.tww-berlin.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
-        ("Klinikum Ernst von Bergmann", "https:" + SLASH + SLASH + "www.evb-gesundheit.de" + SLASH + "karriere" + SLASH + "stellenangebote")
-    ]
-    keywords = ["praktische tätigkeit", "pt1", "pt 1", "pia", "psychotherapeut in ausbildung", "psychologin in ausbildung", "psychologe in ausbildung"]
+        # Alexianer, Havelhöhe & Privatkliniken
+        ("Alexianer Karriere (St. Hedwig, Hedwigshöhe, Weißensee)", "https:" + SLASH + SLASH + "www.alexianer.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
+        ("Alexianer Berlin-Weißensee (St. Joseph)", "https:" + SLASH + SLASH + "www.alexianer-berlin-weissensee.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
+        ("Alexianer Berlin-Hedwigkliniken", "https:" + SLASH + SLASH + "www.alexianer-berlin-hedwigkliniken.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
+        ("Gemeinschaftskrankenhaus Havelhöhe", "https:" + SLASH + SLASH + "www.havelhoehe.de" + SLASH + "karriere" + SLASH + "stellenangebote.html"),
+        ("Limes Schlosskliniken (Fürstenwalde)", "https:" + SLASH + SLASH + "www.limes-schlosskliniken.de" + SLASH + "karriere" + SLASH),
+        ("Heiligenfeld Kliniken (Berlin-Spandau)", "https:" + SLASH + SLASH + "www.heiligenfeld.de" + SLASH + "karriere" + SLASH + "stellenangebote" + SLASH),
+        ("Oberberg Kliniken (Karriereportal)", "https:" + SLASH + SLASH + "www.oberbergkliniken.de" + SLASH + "karriere"),
+        ("Oberberg Kliniken (Stellenangebote)", "https:" + SLASH + SLASH + "www.oberbergkliniken.de" + SLASH + "karriere" + SLASH + "stellenangebote"),
+        ("Park-Klinik Sophie Charlotte (Privatklinik)", "https:" + SLASH + SLASH + "www.parkklinik-sophie-charlotte.de" + SLASH + "karriere" + SLASH),
+        ("Schlosspark-Klinik Berlin", "https:" + SLASH + SLASH + "www.schlosspark-klinik.de" + SLASH + "karriere" + SLASH + "stellenangebote" + SLASH),
+        # Psychosomatik-Rehas & Sucht-Rehas
+        ("Reha-Zentrum Seehof Teltow (DRV Bund)", "https:" + SLASH + SLASH + "www.reha-klinik-seehof.de" + SLASH + "DE" + SLASH + "Karriere" + SLASH + "karriere_node.html"),
+        ("Brandenburg Klinik Bernau-Waldsiedlung", "https:" + SLASH + SLASH + "www.brandenburgklinik.de" + SLASH + "karriere" + SLASH + "stellenangebote" + SLASH),
+        ("Rehaklinik Hoher Fläming Bad Belzig", "https:" + SLASH + SLASH + "www.rehaklinik-hoher-flaeming.de" + SLASH + "karriere" + SLASH),
+        ("Heinrich-Heine-Klinik Potsdam (Psychosomatik)", "https:" + SLASH + SLASH + "www.heinrich-heine-klinik.de" + SLASH + "karriere" + SLASH),
+        ("Klinik am See Rüdersdorf (Psychosomatik)", "https:" + SLASH + SLASH + "://klinikamsee.com" + SLASH + "karriere" + SLASH + "stellenangebote" + SLASH),
+        ("Fachklinik Wolletzsee Angermünde (GLG)", "https:" + SLASH + SLASH + "www.glg-karriere.de" + SLASH + "stellenangebote"),
 
-    for name, url in clinic_pages:
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=15)
-            if resp.status_code == 200:
-                html_lower = resp.text.lower()
-                for kw in keywords:
-                    if kw in html_lower:
-                        key = f"{name}:{kw}"
-                        if key not in seen:
-                            seen.add(key)
-                            new_found = True
-                            msg = f"🏥 <b>Klinik-Treffer bei {name}!</b>\nAuf der Karriereseite wurde das Stichwort <b>„{kw}“</b> gefunden.\n🔗 <a href='{url}'>Direkt zur Klinik-Jobbörse</a>"
-                            send_telegram(msg)
-                        break
-        except Exception as e:
-            print(f"Klinik Fehler ({name}):", e)
-    return new_found
-
-def search_jobs():
-    seen = load_seen()
-    is_first_run = len(seen) == 0
-
-    found_rss = check_rss_feeds(seen)
-    found_clinics = check_clinics(seen)
-
-    if is_first_run:
-        send_telegram("✅ <b>Verbindung steht!</b> Dein PT1-Bot für Berlin & Brandenburg ist jetzt aktiv und meldet dir ab sofort neue Treffer.")
-
-    if found_rss or found_clinics:
-        save_seen(seen)
-
-if __name__ == "__main__":
-    search_jobs()
 
 
 
