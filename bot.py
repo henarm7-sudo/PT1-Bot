@@ -5,11 +5,11 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 import requests
 
-TOKEN = os.environ["TELEGRAM_TOKEN"]
-CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+TOKEN = os.environ["TELEGRAM_TOKEN"].strip()
+CHAT_ID = os.environ["TELEGRAM_CHAT_ID"].strip()
 SEEN_FILE = "seen_jobs.json"
 
-KEYWORDS = ["Praktische Tätigkeit", "PT1", "PiA", "Psychologe in Ausbildung"]
+KEYWORDS = ["Praktische Tätigkeit", "PT1", "PiA Psychotherapie", "Psychologe in Ausbildung"]
 REGIONS = ["Berlin", "Brandenburg"]
 
 BROWSER_HEADERS = {
@@ -30,7 +30,8 @@ def save_seen(seen):
 
 def send_telegram(text):
     url = f"https://telegram.org{TOKEN}/sendMessage"
-    requests.post(url, data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"})
+    r = requests.post(url, data={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML"})
+    print("Telegram Antwort:", r.status_code, r.text)
     time.sleep(0.5)
 
 def check_arbeitsagentur(seen):
@@ -45,10 +46,12 @@ def check_arbeitsagentur(seen):
                     params=params,
                     timeout=15
                 )
+                print(f"AA ({region} - {kw}): Status {resp.status_code}")
                 if resp.status_code != 200 or not resp.text.strip():
                     continue
                 data = resp.json()
-            except Exception:
+            except Exception as e:
+                print("AA Fehler:", e)
                 continue
 
             for job in data.get("stellenangebote", []):
@@ -63,44 +66,54 @@ def check_arbeitsagentur(seen):
                         seen.add(ref_nr)
                         new_found = True
                         link = f"https://arbeitsagentur.de{ref_nr}"
-                        msg = f"🆕 <b>Neue PT1/PiA-Stelle (Arbeitsagentur)!</b>\n\n<b>{titel}</b>\n🏥 {arbeitgeber}\n📍 {ort}\n🔗 <a href='{link}'>Zur Ausschreibung</a>"
+                        msg = f"🆕 <b>Neue PT1/PiA-Stelle!</b>\n\n<b>{titel}</b>\n🏥 {arbeitgeber}\n📍 {ort}\n🔗 <a href='{link}'>Zur Ausschreibung</a>"
                         send_telegram(msg)
     return new_found
 
 def check_web_feeds(seen):
     new_found = False
     queries = [
-        '"Praktische Tätigkeit 1" Berlin OR Brandenburg',
-        '"PT1" Psychotherapie Berlin OR Brandenburg',
-        '"PiA" Psychiatrie Berlin OR Brandenburg'
+        "Praktische Tätigkeit 1 Berlin",
+        "Praktische Tätigkeit 1 Brandenburg",
+        "PT1 Psychotherapie Berlin",
+        "PiA Psychiatrie Berlin"
     ]
     for q in queries:
         try:
             url = f"https://google.com{urllib.parse.quote(q)}&hl=de&gl=DE&ceid=DE:de"
             resp = requests.get(url, headers={"User-Agent": BROWSER_HEADERS["User-Agent"]}, timeout=15)
+            print(f"Feed ({q}): Status {resp.status_code}")
             if resp.status_code != 200:
                 continue
             root = ET.fromstring(resp.content)
-            for item in root.findall(".//item")[:10]:
+            for item in root.findall(".//item")[:5]:
                 title = item.findtext("title", "")
                 link = item.findtext("link", "")
                 guid = item.findtext("guid", link)
                 if guid and guid not in seen:
                     seen.add(guid)
                     new_found = True
-                    msg = f"🌐 <b>Neuer Web-Treffer (PT1/PiA)!</b>\n\n<b>{title}</b>\n🔗 <a href='{link}'>Zum Beitrag / zur Seite</a>"
+                    msg = f"🌐 <b>Web-Treffer:</b>\n\n<b>{title}</b>\n🔗 <a href='{link}'>Öffnen</a>"
                     send_telegram(msg)
-        except Exception:
+        except Exception as e:
+            print("Feed Fehler:", e)
             continue
     return new_found
 
 def search_jobs():
     seen = load_seen()
+    is_first_run = len(seen) == 0
+
     found_aa = check_arbeitsagentur(seen)
     found_web = check_web_feeds(seen)
+
+    if is_first_run:
+        send_telegram("✅ <b>Verbindung steht!</b> Dein PT1-Bot läuft erfolgreich und hat seinen ersten Suchlauf abgeschlossen.")
+
     if found_aa or found_web:
         save_seen(seen)
 
 if __name__ == "__main__":
     search_jobs()
+
 
